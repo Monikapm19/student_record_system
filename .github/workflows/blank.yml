@@ -1,0 +1,25 @@
+
+name: Student Record System CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  repository-check:
+    name: Verify repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify project documents
+        run: |
+          test -f "1_SRS_StudentRecordSystem.docx"
+          test -f "2_TestPlan_StudentRecordSystem.docx"
+          test -f "3_ArchitectureDesign_StudentRecordSystem.docx"
+          echo "All required project documents are present."
