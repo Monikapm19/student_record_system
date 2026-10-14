@@ -5,21 +5,24 @@ const ROLE_ALIASES = {
   FACULTY: "FACULTY",
   STUDENT: "STUDENT",
   PARENT: "PARENT",
-  GUARDIAN: "PARENT",
+  PARENT_GUARDIAN: "PARENT",
   "PARENT/GUARDIAN": "PARENT",
-  "PARENT_GUARDIAN": "PARENT",
 };
 
 function normalizeRole(role) {
-  return ROLE_ALIASES[String(role).trim().toUpperCase()];
+  if (typeof role !== "string") {
+    return null;
+  }
+
+  return ROLE_ALIASES[role.trim().toUpperCase()] || null;
 }
 
 function authorizeRoles(...allowedRoles) {
   const normalizedRoles = allowedRoles.map(normalizeRole);
 
   if (
-    normalizedRoles.some((role) => !role) ||
-    normalizedRoles.length === 0
+    normalizedRoles.length === 0 ||
+    normalizedRoles.some((role) => role === null)
   ) {
     throw new Error("Invalid or missing role configuration.");
   }
