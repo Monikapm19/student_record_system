@@ -4,7 +4,7 @@ const { verifyToken } = require("../utils/jwt");
 function auth(req, res, next) {
   const authorization = req.headers.authorization;
 
-  if (!authorization || !authorization.startsWith("Bearer ")) {
+  if (!authorization || !/^Bearer\s+/i.test(authorization)) {
     return res.status(401).json({
       success: false,
       error: {
@@ -14,7 +14,7 @@ function auth(req, res, next) {
     });
   }
 
-  const token = authorization.slice("Bearer ".length).trim();
+  const token = authorization.replace(/^Bearer\s+/i, "").trim();
 
   if (!token) {
     return res.status(401).json({
@@ -26,26 +26,17 @@ function auth(req, res, next) {
     });
   }
 
-  try {
-    const payload = verifyToken(token);
+  let payload;
 
-    if (!payload.sub || !payload.role) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication token is invalid.",
-        },
-      });
+  try {
+    payload = verifyToken(token);
+  } catch (error) {
+    if (error.message === "JWT_SECRET is not configured.") {
+      error.status = 500;
+      error.code = "JWT_CONFIGURATION_ERROR";
+      return next(error);
     }
 
-    req.user = {
-      id: payload.sub,
-      role: payload.role,
-    };
-
-    return next();
-  } catch (error) {
     return res.status(401).json({
       success: false,
       error: {
@@ -54,6 +45,23 @@ function auth(req, res, next) {
       },
     });
   }
+
+  if (!payload.sub || !payload.role) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication token is invalid.",
+      },
+    });
+  }
+
+  req.user = {
+    id: payload.sub,
+    role: payload.role,
+  };
+
+  return next();
 }
 
 module.exports = auth;
