@@ -1,5 +1,5 @@
 -- Student Record System: Sample Seed Data
--- Demo password for all accounts: Test@1234
+-- Demo credentials are for local development only.
 -- Passwords are stored as bcrypt hashes.
 
 BEGIN;
