@@ -2,6 +2,18 @@
 
 const SALT_ROUNDS = 10;
 
+function validatePasswordRules(password) {
+  if (typeof password !== "string" || password.length < 8) {
+    return false;
+  }
+
+  return (
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password)
+  );
+}
+
 async function hashPassword(password) {
   if (typeof password !== "string" || password.length === 0) {
     throw new Error("Password must be a non-empty string.");
@@ -23,6 +35,7 @@ async function verifyPassword(password, passwordHash) {
 }
 
 module.exports = {
+  validatePasswordRules,
   hashPassword,
   verifyPassword,
 };

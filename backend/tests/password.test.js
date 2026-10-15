@@ -30,3 +30,33 @@ describe("Password security", () => {
     );
   });
 });
+
+describe("Password rules validation", () => {
+  const { validatePasswordRules } = require("../src/utils/password");
+
+  test("accepts a password meeting all rules", () => {
+    expect(validatePasswordRules("Secure123")).toBe(true);
+  });
+
+  test("rejects passwords shorter than 8 characters", () => {
+    expect(validatePasswordRules("Abc123")).toBe(false);
+  });
+
+  test("rejects a password without an uppercase letter", () => {
+    expect(validatePasswordRules("secure123")).toBe(false);
+  });
+
+  test("rejects a password without a lowercase letter", () => {
+    expect(validatePasswordRules("SECURE123")).toBe(false);
+  });
+
+  test("rejects a password without a digit", () => {
+    expect(validatePasswordRules("SecurePass")).toBe(false);
+  });
+
+  test("rejects non-string and empty inputs", () => {
+    expect(validatePasswordRules("")).toBe(false);
+    expect(validatePasswordRules(null)).toBe(false);
+    expect(validatePasswordRules(12345678)).toBe(false);
+  });
+});
