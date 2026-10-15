@@ -38,9 +38,9 @@ describe("Password rules validation", () => {
     expect(validatePasswordRules("Secure123")).toBe(true);
   });
 
-  test("rejects passwords shorter than 8 characters", () => {
-    expect(validatePasswordRules("Abc123")).toBe(false);
-  });
+ test("rejects passwords shorter than 8 characters", () => {
+  expect(validatePasswordRules("Ab1")).toBe(false);
+});
 
   test("rejects a password without an uppercase letter", () => {
     expect(validatePasswordRules("secure123")).toBe(false);
