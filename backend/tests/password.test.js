@@ -15,10 +15,10 @@ describe("Password security", () => {
   });
 
   test("verifies the correct password", async () => {
-    const value = "unit-test-value";
-    const hash = await hashPassword(value);
+    const password = "unit-test-value";
+    const hash = await hashPassword(password);
 
-    await expect(verifyPassword(value, hash)).resolves.toBe(true);
+    await expect(verifyPassword(password, hash)).resolves.toBe(true);
   });
 
   test("rejects an incorrect password", async () => {
@@ -39,6 +39,12 @@ describe("Password security", () => {
     ).resolves.toBe(false);
   });
 
+  test("returns false for a malformed bcrypt hash", async () => {
+    await expect(
+      verifyPassword("Secure123", "not-a-valid-bcrypt-hash")
+    ).resolves.toBe(false);
+  });
+
   test("rejects an empty password when hashing", async () => {
     await expect(hashPassword("")).rejects.toThrow(
       "Password must be a non-empty string."
@@ -51,8 +57,12 @@ describe("Password rules validation", () => {
     expect(validatePasswordRules("Secure123")).toBe(true);
   });
 
-  test("rejects inputs shorter than 8 characters", () => {
-    expect(validatePasswordRules("x7")).toBe(false);
+  test("rejects a password of exactly 7 characters", () => {
+    expect(validatePasswordRules("Abc123x")).toBe(false);
+  });
+
+  test("accepts a password of exactly 8 characters", () => {
+    expect(validatePasswordRules("Abc123xy")).toBe(true);
   });
 
   test("rejects a value without an uppercase letter", () => {
