@@ -473,6 +473,56 @@ describe("FR-08 attendance editing database behavior", () => {
     expect(client.query).toHaveBeenCalledWith("ROLLBACK");
   });
 
+  test("allows faculty to edit attendance at exactly 24 hours", async () => {
+    const fixedNow = new Date("2026-10-15T12:00:00.000Z").getTime();
+    jest.useFakeTimers({ now: fixedNow });
+
+    try {
+      mockClientQuery(async (sql) => {
+        if (["BEGIN", "COMMIT", "ROLLBACK"].includes(sql)) {
+          return transactionResult();
+        }
+
+        if (sql.includes("SELECT ar.id")) {
+          return {
+            rowCount: 1,
+            rows: [
+              attendanceRecord({
+                marked_at: new Date(
+                  fixedNow - 24 * 60 * 60 * 1000
+                ),
+              }),
+            ],
+          };
+        }
+
+        if (sql.includes("SELECT id FROM faculty")) {
+          return facultyProfile();
+        }
+
+        if (sql.includes("UPDATE attendance_records")) {
+          return {
+            rowCount: 1,
+            rows: [updatedAttendance("Present")],
+          };
+        }
+
+        throw new Error(`Unexpected SQL: ${sql}`);
+      });
+
+      const response = await request(app)
+        .put("/api/v1/attendance/30")
+        .set("Authorization", `Bearer ${facultyToken()}`)
+        .send({ status: "Present" });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.status).toBe("Present");
+      expect(client.query).toHaveBeenCalledWith("COMMIT");
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   test("rejects faculty edits when the marked time is in the future", async () => {
     mockClientQuery(async (sql) => {
       if (["BEGIN", "ROLLBACK"].includes(sql)) {
