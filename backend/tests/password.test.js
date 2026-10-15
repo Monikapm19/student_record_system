@@ -1,8 +1,8 @@
-﻿const { hashPassword, verifyPassword } = require("../src/utils/password");
+﻿const { hashPassword, verifyPassword, validatePasswordRules } = require("../src/utils/password");
 
 describe("Password security", () => {
   test("hashes a password without storing plain text", async () => {
-    const password = "Test@1234";
+    const password = "UnitTestPass123";
     const hash = await hashPassword(password);
 
     expect(hash).not.toBe(password);
@@ -10,18 +10,20 @@ describe("Password security", () => {
   });
 
   test("verifies the correct password", async () => {
-    const hash = await hashPassword("Test@1234");
-    await expect(verifyPassword("Test@1234", hash)).resolves.toBe(true);
+    const hash = await hashPassword("UnitTestPass123");
+
+    await expect(verifyPassword("UnitTestPass123", hash)).resolves.toBe(true);
   });
 
   test("rejects an incorrect password", async () => {
-    const hash = await hashPassword("Test@1234");
-    await expect(verifyPassword("WrongPassword", hash)).resolves.toBe(false);
+    const hash = await hashPassword("UnitTestPass123");
+
+    await expect(verifyPassword("IncorrectPass456", hash)).resolves.toBe(false);
   });
 
   test("rejects invalid verification inputs", async () => {
-    await expect(verifyPassword(null, "some-hash")).resolves.toBe(false);
-    await expect(verifyPassword("password", null)).resolves.toBe(false);
+    await expect(verifyPassword(null, "synthetic-hash")).resolves.toBe(false);
+    await expect(verifyPassword("UnitTestPass123", null)).resolves.toBe(false);
   });
 
   test("rejects an empty password when hashing", async () => {
@@ -32,8 +34,6 @@ describe("Password security", () => {
 });
 
 describe("Password rules validation", () => {
-  const { validatePasswordRules } = require("../src/utils/password");
-
   test("accepts a password meeting all rules", () => {
     expect(validatePasswordRules("Secure123")).toBe(true);
   });
